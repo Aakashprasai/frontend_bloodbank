@@ -1,30 +1,33 @@
+
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { createUserApi } from "../apis/api";
 
-
 const Register = () => {
-
   // useState (setting input value)
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
+  const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
+  const [number, setContact] = useState('')
+  const [currentAddress, setCurrentAddress] = useState('')
   const [password, setPassword] = useState('')
 
+  const naviget= useNavigate();
 
   // function for changing input value
 
-  const changeFirstName = (e) => { // e is event that is typed by the user
-    setFirstName(e.target.value)
-  }
-
-  const changeLastName = (e) => { // e is event that is typed by the user
-    setLastName(e.target.value)
+  const changeFullName = (e) => { // e is event that is typed by the user
+    setFullName(e.target.value)
   }
 
   const changeEmail = (e) => { // e is event that is typed by the user
     setEmail(e.target.value)
+  }
+  const changeContact = (e) => { // e is event that is typed by the user
+    setContact(e.target.value)
+  }
+  const changeCurrentAddress = (e) => { // e is event that is typed by the user
+    setCurrentAddress(e.target.value)
   }
 
   const changePassword = (e) => { // e is event that is typed by the user
@@ -32,53 +35,89 @@ const Register = () => {
   }
 
 
+
   // function for button 
   const handleSubmit = (e) => {
-    // check if input value is available
     e.preventDefault(); // prevents browser to reload
-    console.log(firstName, lastName, email, password);
+    console.log(fullName, email, password, currentAddress, number, password);
 
     // making json data object
+    // const formData = new FormData();
+    // formData.append('fullName', fullName)
+    // formData.append('email', email)
+    // formData.append('number', contact)
+    // formData.append('currentAddress', currentAddress)
+    // formData.append('password', password)
+
     const data = {
-      firstName: firstName,
-      lastName: lastName,
+      fullName: fullName,
       email: email,
+      number: number,
+      currentAddress: currentAddress,
       password: password
     }
 
     // making API call
     createUserApi(data).then((res) => {
-      if (res.data.success === false) {
+      console.log(data)
+      if (res.data.success == false) {
         toast.error(res.data.message)
       } else {
         toast.success(res.data.message)
+        naviget("/login")
       }
 
     }).catch((err) => {
       toast.error("Server Error")
       console.log(err.message)
-    })
-
-
+    });
   }
 
   return (
     <>
-      <h4 className='p-4'> Create Your Account</h4>
-      <form className='m-4 w-25'>
-        <label>Firstname</label>
-        <input onChange={changeFirstName} type="text" className='form-control mb-2' placeholder='Enter your First name' />
-        <label>Lastname</label>
-        <input onChange={changeLastName} type="text" className='form-control mb-2' placeholder='Enter your Last name' />
-        <label>Email</label>
-        <input onChange={changeEmail} type="email" className='form-control mb-2' placeholder='Enter your Email' />
-        <label>Password</label>
-        <input onChange={changePassword} type="password" className='form-control mb-3' placeholder='Enter your Password' />
-        <Link onClick={handleSubmit} className="btn btn-success w-100" to={"/login"}>Create an Account</Link>
-        <a href="" className='text-black text-decoration-none'>Already have an account?</a>
-      </form>
+      <div className="secondBody">
+        <div className="container" style={{ marginTop: "5rem" }}>
+          <div className="form login">
+            <header>Signup</header>
+            <form className="form-control">
+              <div className="inputBox">
+                <i className="fas fa-user"></i>
+                <input onChange={changeFullName} type="text" required />
+                <label>Enter Your Fullname</label>
+              </div>
+              <div className="inputBox">
+                <i className="fas fa-envelope"></i>
+                <input onChange={changeEmail} type="text" maxlength="26" required />
+                <label>Enter Your Email</label>
+              </div>
+              <div className="inputBox">
+                <i className="fas fa-phone"></i>
+                <input onChange={changeContact} type="text" maxlength="10" required />
+                <label>Enter Your Contact No.</label>
+              </div>            <div className="inputBox">
+                <i className="fas fa-map"></i>
+                <input onChange={changeCurrentAddress} type="text" maxlength="26" required />
+                <label>Enter Your Current Address</label>
+              </div>
+              <div className="inputBox">
+                <input onChange={changePassword} type="password" maxlength="26" required />
+                <label>Enter Your Password</label>
+              </div>
+              <div className="inputBox">
+                <input type="password" maxlength="26" required />
+                <label>Confirm your Password</label>
+              </div>
+
+              <button className="btn btn-dark b-0 text-white btn-outline-danger" onClick={handleSubmit}>Signup</button>
+              <div className="link">
+                <p>Already have an account? <Link to={'/login'}>Login</Link></p>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </>
   );
-};
+}
 
-export default Register;
+export default Register

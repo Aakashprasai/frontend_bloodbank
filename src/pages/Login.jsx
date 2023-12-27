@@ -1,33 +1,33 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { loginUserApi } from '../apis/api';
+import '../style/login.css';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
+    
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const navigate=useNavigate();
 
-
-    const changeEmail = (e) => { // e is event that is typed by the user
+    const changeEmail = (e) => {
         setEmail(e.target.value)
     }
 
-    const changePassword = (e) => { // e is event that is typed by the user
+    const changePassword = (e) => {
         setPassword(e.target.value)
     }
 
 
     const handleSubmit = (e) => {
-        e.preventDefault(); // prevents browser to reload
+        e.preventDefault();
         console.log(email, password);
 
-        // making json data object
         const data = {
-            email: email, // agaadi ko backend ko ho paxadi ko maathi ko use state ko
+            email: email,
             password: password
         }
 
-        // making API call
         loginUserApi(data).then((res) => {
             if (res.data.success == false) {
                 toast.error(res.data.message)
@@ -37,6 +37,7 @@ const Login = () => {
 
                 const jsonDecode = JSON.stringify(res.data.userData)
                 localStorage.setItem('users', jsonDecode);
+                navigate("/home")
 
             }
 
@@ -48,15 +49,39 @@ const Login = () => {
 
     return (
         <>
-            <h4 className='p-4'> Login to Your Account</h4>
-            <form className='m-4 w-25'>
-                <label>Email</label>
-                <input onChange={changeEmail} type="email" className='form-control mb-2' placeholder='Enter your Email' />
-                <label>Password</label>
-                <input onChange={changePassword} type="password" className='form-control mb-3' placeholder='Enter your Password' />
-                <button onClick={handleSubmit} className="btn btn-success  w-100">Log In</button>
-                <Link className='text-black text-decoration-none' to={'login'}>Already have an account?</Link>
-            </form>
+            <div className='secondBody'>
+                <div class="container">
+                    <div class="form login">
+                        <header>Login</header>
+                        <form>
+                            <div class="inputBox">
+                                <i class="fas fa-envelope"></i>
+                                <input onChange={changeEmail} type="text" required />
+                                <label>Email</label>
+                            </div>
+                            <div class="inputBox">
+                                <i class="fas fa-lock"></i>
+                                <input onChange={changePassword} type="password" maxlength="26" required />
+                                <label>Password</label>
+                            </div>
+                            <div class="link">
+                                <a href="#">Forgot Password</a>
+                            </div>
+                            <button onClick={handleSubmit}>Login</button>
+                            <div class="link">
+                                <p>Don't have an account? <Link to={"/register"}>Signup</Link></p>
+                            </div>
+                            <div class="line"></div>
+                            <div class="social-login">
+                                <a href="#" class="apple"><i class="fab fa-apple"></i> <span>Login with apple</span></a>
+                                <a href="#" class="facebook"><i class="fab fa-facebook"></i> <span>Login with facebook</span></a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+
         </>
     )
 }
