@@ -281,9 +281,10 @@ const HomePage = ({ history }) => {
             {newsData?.map((item) => (
               <div key={item.id} className="col-md-6 col-lg-4 mb-4">
                 <div className="card">
+                {/*image and data from api call and shown in website  */}
                   <img
                     src={item?.image_url ?? "https://via.placeholder.com/150"}
-                    className="card-img-top"
+                    className="card-img-top h-60 w-48"
                     alt={item?.title}
                   />
                   <div className="card-body">

@@ -27,7 +27,7 @@ const Register = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [userImageUrl, setUserImageUrl] = useState(null);
 
-  // functio for image upload
+  // function for image upload
   const handleImageUpload = (event) => {
     const file = event.target.files[0]; //files not file
     setUserImage(file);
@@ -112,7 +112,7 @@ const Register = () => {
     setConfirmPassword(e.target.value);
   };
 
-  // function for button
+  // function for button and submission of form data
   const handleSubmit = (e) => {
     e.preventDefault();
 
