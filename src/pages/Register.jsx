@@ -1,7 +1,9 @@
 import {
+  faAddressBook,
   faEnvelope,
   faLocation,
   faLock,
+  faMapLocation,
   faPhone,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
@@ -10,24 +12,69 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "../../src/style/navbar.css";
 import "../../src/style/register.css";
-import { createUserApi } from "../apis/api";
+import { createUserApi, sendOtpApi } from "../apis/api";
 import CustomFaIcons from "../components/CustomFaIcons";
+
+import { Label, Modal, TextInput } from "flowbite-react";
+import DistrictList from "../components/DistrictsList.jsx";
 
 const Register = () => {
   const navigate = useNavigate();
   // useState (setting input value)
   const [fullName, setFullName] = useState("");
+  const [openModal, setOpenModal] = useState(false);
+
+  const [otp, setOtp] = useState("");
+
+  const sendOtp = async () => {
+    const data = { email: email };
+    sendOtpApi(data)
+      .then((res) => {
+        // console.log(data);
+        if (res.data.success == false) {
+          toast.error(res.data.message);
+        } else {
+          setOpenModal(true);
+          toast.success(res.data.message);
+          setOtp(res?.data?.otp);
+
+          // console.log("OTP:", res.data.otp);
+        }
+      })
+      .catch((err) => {
+        toast.error("Server Error");
+        console.log(err.message);
+      });
+  };
+
+  const validatein = (e) => {
+    e.preventDefault();
+    const isValid = Validate();
+    if (!isValid) {
+      return;
+    } else {
+      sendOtp(email);
+    }
+  };
+
+  function onCloseModal() {
+    setOpenModal(false);
+  }
+  const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
   const [email, setEmail] = useState("");
   const [number, setContact] = useState("");
   const [currentAddress, setCurrentAddress] = useState("");
+  const [municipality, setMunicipality] = useState("");
+  const [wardNo, setWardNo] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [userVerificationCode, setUserVerificationCode] = useState("");
 
   const [userImage, setUserImage] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [userImageUrl, setUserImageUrl] = useState(null);
 
-  // function for image upload
+  // functio for image upload
   const handleImageUpload = (event) => {
     const file = event.target.files[0]; //files not file
     setUserImage(file);
@@ -36,7 +83,9 @@ const Register = () => {
 
   //usestate(setting error message)
   const [fnameerror, setFullnameError] = useState("");
-  const [lnameerror, setCurrentAddressError] = useState("");
+  const [addressError, setCurrentAddressError] = useState("");
+  const [municipalityError, setMunicipalityError] = useState("");
+  const [wardNoError, setWardNoError] = useState("");
   const [emailerror, setEmailError] = useState("");
   const [numbererror, setNumberError] = useState("");
   const [passworderror, setPasswordError] = useState("");
@@ -50,34 +99,58 @@ const Register = () => {
     // reset error message
     setFullnameError("");
     setCurrentAddressError("");
+    setMunicipalityError("");
+    setWardNoError("");
     setNumberError("");
     setEmailError("");
     setPasswordError("");
     setCpasswordError("");
 
     if (fullName.trim() === "") {
-      setFullnameError("First Name is Required");
+      setFullnameError("Name is Required");
       isValid = false;
     }
     if (email.trim() === "") {
       setEmailError("Email is Required");
       isValid = false;
     }
-    
-    if (number.trim() === "") {
-      setNumberError("NUmber is Required");
+    if (email.trim() !== "" && !email.includes("@")) {
+      setEmailError("Invalid Email");
       isValid = false;
     }
+
+    if (number.trim() === "" || number.length !== 10) {
+      setNumberError("Number is Invalid (Must be 10 word) ");
+      isValid = false;
+    }
+
     if (currentAddress.trim() === "") {
-      setCurrentAddressError("Email is Required");
+      setCurrentAddressError("Address is Required");
       isValid = false;
     }
+
+    if (municipality.trim() === "") {
+      setMunicipalityError("Municipality is Required");
+      isValid = false;
+    }
+
+    if (wardNo.trim() === "") {
+      setWardNoError("Ward No is Required");
+      isValid = false;
+    }
+
     if (password.trim() === "") {
       setPasswordError("Password is Required");
       isValid = false;
     }
+    if (password.trim() !== "" && !password.match(passwordRegex)) {
+      setPasswordError(
+        "Password must be 6 or more characters with at least one number and one uppercase and lowercase letter"
+      );
+      isValid = false;
+    }
     if (confirmPassword.trim() === "") {
-      setCpasswordError("Password is Required");
+      setCpasswordError("Password doesnot match");
       isValid = false;
     }
 
@@ -97,6 +170,11 @@ const Register = () => {
   const changeEmail = (e) => {
     setEmail(e.target.value);
   };
+
+  const changeCode = (e) => {
+    setUserVerificationCode(e.target.value);
+  };
+
   const changeContact = (e) => {
     setContact(e.target.value);
   };
@@ -112,30 +190,27 @@ const Register = () => {
     setConfirmPassword(e.target.value);
   };
 
-  // function for button and submission of form data
+  // function for button
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const isValid = Validate();
-
-    if (!isValid) {
-      return;
-    }
-    console.log(fullName, email, password, currentAddress, number, password);
 
     const data = {
       fullName: fullName,
       email: email,
       number: number,
       currentAddress: currentAddress,
+      municipality: municipality,
+      wardNo: wardNo,
       password: password,
       userImage: userImage,
+      userVerificationCode: userVerificationCode,
+      otp: otp,
     };
 
     // making API call
     createUserApi(data)
       .then((res) => {
-        console.log(data);
+        // console.log(data);
         if (res.data.success == false) {
           toast.error(res.data.message);
         } else {
@@ -159,7 +234,12 @@ const Register = () => {
               <i>
                 <CustomFaIcons icon={faUser} className={"m-0"} />
               </i>
-              <input onChange={changeFullName} type="text" required />
+              <input
+                style={{ boxSshadow: "none" }}
+                onChange={changeFullName}
+                type="text"
+                required
+              />
               <label>Enter Your Fullname</label>
             </div>
             {fnameerror && <p className="text-danger">{fnameerror}</p>}
@@ -168,9 +248,10 @@ const Register = () => {
                 <CustomFaIcons icon={faEnvelope} className={"m-0"} />
               </i>
               <input
+                style={{ boxSshadow: "none" }}
                 onChange={changeEmail}
                 type="text"
-                maxlength="26"
+                maxLength="26"
                 required
               />
               <label>Enter Your Email</label>
@@ -181,35 +262,62 @@ const Register = () => {
                 <CustomFaIcons icon={faPhone} className={"m-0"} />
               </i>
               <input
+                style={{ boxSshadow: "none" }}
                 onChange={changeContact}
                 type="number"
-                maxlength="10"
+                maxLength="10"
                 required
               />
               <label>Enter Your Contact No.</label>
             </div>
-            {numbererror && <p className="text-danger">{number}</p>}
+            {numbererror && <p className="text-danger">{numbererror}</p>}
             <div className="registerInputBox">
               <i>
                 <CustomFaIcons icon={faLocation} className={"m-0"} />
               </i>
+              <DistrictList className="block px-4 py-2 !border border-!gray-300 rounded-md appearance-none focus:!outline-none focus:!ring focus:!border-gray-300" label={" "} onChange={changeCurrentAddress} style={{
+                width: "10rem !important",
+              }} />
+            </div>
+            {addressError && <p className="text-danger">{addressError}</p>}
+            <div className="registerInputBox">
+              <i>
+                <CustomFaIcons icon={faMapLocation} className={"m-0"} />
+              </i>
               <input
-                onChange={changeCurrentAddress}
+                onChange={(e) => setMunicipality(e.target.value)}
                 type="text"
-                maxlength="26"
+                maxLength="26"
                 required
               />
-              <label>Enter Your Current Address</label>
+              <label>Enter Your Municipality</label>
             </div>
-            {lnameerror && <p className="text-danger">{lnameerror}</p>}
+            {municipalityError && (
+              <p className="text-danger">{municipalityError}</p>
+            )}
+
+            <div className="registerInputBox">
+              <i>
+                <CustomFaIcons icon={faAddressBook} className={"m-0"} />
+              </i>
+              <input
+                onChange={(e) => setWardNo(e.target.value)}
+                type="number"
+                maxLength="26"
+                required
+              />
+              <label>Enter Your Ward No</label>
+            </div>
+            {wardNoError && <p className="text-danger">{wardNoError}</p>}
             <div className="registerInputBox">
               <i>
                 <CustomFaIcons icon={faLock} className={"m-0"} />
               </i>
               <input
+                style={{ boxSshadow: "none" }}
                 onChange={changePassword}
                 type="password"
-                maxlength="26"
+                maxLength="26"
                 required
               />
               <label>Enter Your Password</label>
@@ -220,9 +328,10 @@ const Register = () => {
                 <CustomFaIcons icon={faLock} className={"m-0"} />
               </i>
               <input
+                style={{ boxSshadow: "none" }}
                 onChange={changeConfirmPassword}
                 type="password"
-                maxlength="26"
+                maxLength="26"
                 required
               />
               <label>Confirm your Password</label>
@@ -230,10 +339,39 @@ const Register = () => {
             {cpassworderror && <p className="text-danger">{cpassworderror}</p>}
             <button
               className="btn btn-dark text-white border-0 btn-outline-danger"
-              onClick={handleSubmit}
+              onClick={(e) => validatein(e)}
             >
-              Signup
+              Sign Up
             </button>
+            <Modal show={openModal} size="md" onClose={onCloseModal} popup>
+              <Modal.Header />
+              <Modal.Body>
+                <div className="space-y-6">
+                  <h3 className="text-xl font-medium text-gray-900 dark:text-white">
+                    Enter Your Verification code here ....
+                  </h3>
+                  <div>
+                    <div className="mb-2 block">
+                      <Label htmlFor="code" value="Your Verification Code" />
+                    </div>
+                    <TextInput
+                      id="code"
+                      type="text"
+                      onChange={changeCode}
+                      required
+                    />
+                  </div>
+                  <div className="w-full d-flex flex-row justify-center">
+                    <button
+                      className="btn btn-dark text-white border-0 btn-outline-danger"
+                      onClick={handleSubmit}
+                    >
+                      Create your account
+                    </button>
+                  </div>
+                </div>
+              </Modal.Body>
+            </Modal>
             <div className="link">
               <p>
                 Already have an account? <Link to={"/login"}>Login</Link>

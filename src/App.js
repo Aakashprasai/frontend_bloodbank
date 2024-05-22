@@ -7,14 +7,15 @@ import ErrorPage from "./components/ErrorPage";
 import Footer from "./components/Footer";
 import { default as Navbars } from "./components/Navbars";
 import AboutUs from "./pages/AboutUs";
+import EditBloodBank from "./pages/BBUsers/EditBloodBank";
 import ContactUs from "./pages/ContactUs";
+import ForBloodbank from "./pages/ForBloodbank";
 import HomePage from "./pages/HomePage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Services from "./pages/Services";
 import UsersLists from "./pages/UsersLists";
 import AdminPanel from "./pages/admin/AdminPanel";
-import EditBloodBank from "./pages/admin/bloodbanks/EditBloodBank";
 import EditHospital from "./pages/admin/hospitals/EditHospital";
 import BloodBanks from "./pages/users/BloodBanks/BloodBanks";
 import SingleBloodbank from "./pages/users/BloodBanks/SingleBloodBanks";
@@ -29,7 +30,13 @@ import ForgetPassword from "./pages/users/profile/ForgetPassword";
 import History from "./pages/users/profile/History";
 import Profile from "./pages/users/profile/Profile";
 import AdminRoutes from "./protected/AdminRoutes";
+import BloodBankUserRoutes from "./protected/BloodBankUserRoutes";
 import UserRoutes from "./protected/UserRoutes";
+import BBDashBoard from "./pages/BBUsers/BBDashBoard";
+import EditBloodRequests from "./pages/users/blood_request/EditBloodRequests";
+import ReqForBB from "./pages/users/blood_request/ReqForBB";
+import EditCampaigns from "./pages/BBUsers/Campaigns/EditCampaigns";
+import InterestedUsers from "./pages/BBUsers/Campaigns/InterestedUsers";
 
 function App() {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -40,13 +47,20 @@ function App() {
   return (
     <Router>
       <ToastContainer />
-      {!user || (user && !user.isAdmin) ? <Navbars /> : null}
+      {!user || (user && !user.isAdmin && !user.isBloodBank) ? <Navbars /> : null}
       <Routes>
         <Route element={<AdminRoutes />}>
           <Route path="/admin/dashboard" element={<AdminPanel />} />
           <Route path="/edit-hospital/:id" element={<EditHospital />} />
           <Route path="/edit-bloodbank/:id" element={<EditBloodBank />} />
           {/* <Route path="/admin/dashboard" element={<AdminPanel />} /> */}
+        </Route>
+
+        <Route element={<BloodBankUserRoutes />}>
+          <Route path="/bb/dashboard" element={<AdminPanel />} />
+          <Route path="/maindash" element={<BBDashBoard />} />
+          <Route path="/update_campaign/:id" element={<EditCampaigns />} />
+          <Route path="/registered_users/:id" element={<InterestedUsers />} />
         </Route>
 
         <Route path="/home" element={<HomePage />} />
@@ -66,10 +80,13 @@ function App() {
         <Route path="/forgetpassword" element={<ForgetPassword />} />
         <Route path="/users-list" element={<UsersLists />} />
         <Route path="/*" element={<ErrorPage />} />
+        <Route path="/bloodbank" element={<ForBloodbank />} />
 
         <Route element={<UserRoutes />}>
           <Route path="/view_all_donors" element={<Users />} />
+          <Route path="/req_for_bb/:id" element={<ReqForBB />} />
           <Route path="/be-a-donor/:id" element={<BeADonor />} />
+          <Route path="/edit-request/:id" element={<EditBloodRequests />} />
           <Route path="/add_blood_requests" element={<AddBloodRequests />} />
           <Route
             path="/profile/:id"
@@ -78,7 +95,7 @@ function App() {
           <Route path="/get_my_request/:id" element={<History />} />
         </Route>
       </Routes>
-      {!user || (user && !user.isAdmin) ? <Footer /> : null}
+      {!user || (user && !user.isAdmin && !user.isBloodBank) ? <Footer /> : null}
     </Router>
   );
 }

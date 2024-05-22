@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { addRequestAPI } from "../../../apis/api";
+import DistrictList from "../../../components/DistrictsList";
 import "../../../style/AddBloodRequests.css";
 
 const AddBloodRequests = () => {
@@ -13,6 +14,8 @@ const AddBloodRequests = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [hospitalName, sethospitalName] = useState("");
   const [hospitalAddress, setHospitalAddress] = useState("");
+  const [municipality, setMunicipality] = useState("");
+  const [wardNo, setWardNo] = useState("");
   const [quantity, setQuantity] = useState("");
   const [urgency, setUrgency] = useState("");
   const [reason, setReason] = useState("");
@@ -35,6 +38,8 @@ const AddBloodRequests = () => {
     formData.append("phoneNumber", phoneNumber);
     formData.append("hospitalName", hospitalName);
     formData.append("hospitalAddress", hospitalAddress);
+    formData.append("municipality", municipality);
+    formData.append("wardNo", wardNo);
     formData.append("quantity", quantity);
     formData.append("urgency", urgency);
     formData.append("reason", reason);
@@ -61,6 +66,8 @@ const AddBloodRequests = () => {
         setQuantity("");
         setComponents("");
         setHospitalAddress("");
+        setWardNo("");
+        setMunicipality("");
         sethospitalName("");
         setPhoneNumber("");
         setPatientBloodType("");
@@ -135,12 +142,9 @@ const AddBloodRequests = () => {
                 <div className="underline"></div>
               </div>
               <div className="input-data">
-                <input
-                  value={hospitalAddress}
+                <DistrictList
+                  label={" "}
                   onChange={(e) => setHospitalAddress(e.target.value)}
-                  placeholder="Hospital/Clinic Address"
-                  type="text"
-                  required
                 />
                 <div className="underline"></div>
               </div>
@@ -228,6 +232,28 @@ const AddBloodRequests = () => {
             <div className="form-row">
               <div className="input-data">
                 <input
+                  value={municipality}
+                  onChange={(e) => setMunicipality(e.target.value)}
+                  placeholder="Select Municipality"
+                  type="text"
+                  required
+                />
+                <div className="underline"></div>
+              </div>
+              <div className="input-data">
+                <input
+                  value={wardNo}
+                  onChange={(e) => setWardNo(e.target.value)}
+                  placeholder="Ward Number"
+                  type="text"
+                  required
+                />
+                <div className="underline"></div>
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="input-data">
+                <input
                   value={latitude}
                   onChange={(e) => setLatitude(e.target.value)}
                   placeholder="Latitude (for faster avaibility)"
@@ -253,7 +279,7 @@ const AddBloodRequests = () => {
                   value={anyPrecautions}
                   onChange={(e) => setPrecautions(e.target.value)}
                   placeholder="Any special precations to be taken"
-                  type="number"
+                  type="text"
                   required
                 />
                 <div className="underline"></div>

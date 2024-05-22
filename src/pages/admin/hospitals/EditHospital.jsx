@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { fetchSingleHospitalApi, updatehospitalApi } from "../../../apis/api";
 import DistrictList from "../../../components/DistrictsList";
+import e from "cors";
 
 const EditHospital = () => {
   const { id } = useParams();
@@ -13,6 +14,8 @@ const EditHospital = () => {
   const navigate = useNavigate();
   const [hospitalName, setHospitalName] = useState("");
   const [hospitalAddress, setHospitalAddress] = useState("");
+  const [municipality, setMunicipality] = useState("");
+  const [wardNo, setWardNo] = useState("");
   const [hospitalContactNumber, setHospitalContactNumber] = useState("");
   const [hospitalType, setHospitalType] = useState("");
   const [hospitalServices, setHospitalServices] = useState("");
@@ -46,6 +49,8 @@ const EditHospital = () => {
     fetchSingleHospitalApi(id).then((res) => {
       setHospitalName(res.data.hospital.hospitalName);
       setHospitalAddress(res.data.hospital.hospitalAddress);
+      setMunicipality(res.data.hospital.municipality);
+      setWardNo(res.data.hospital.wardNo);
       setHospitalContactNumber(res.data.hospital.hospitalContactNumber);
       setHospitalType(res.data.hospital.hospitalType);
       setHospitalServices(res.data.hospital.hospitalServices);
@@ -61,6 +66,8 @@ const EditHospital = () => {
     const formData = new FormData();
     formData.append("hospitalName", hospitalName);
     formData.append("hospitalAddress", hospitalAddress);
+    formData.append("municipality", municipality);
+    formData.append("wardNo", wardNo);
     formData.append("hospitalContactNumber", hospitalContactNumber);
     formData.append("hospitalType", hospitalType);
     formData.append("hospitalServices", hospitalServices);
@@ -70,7 +77,7 @@ const EditHospital = () => {
 
     updatehospitalApi(id, formData)
       .then((res) => {
-        console.log(res.data);
+        // console.log(res.data);
         if (res.data.success == false) {
           toast.error(res.data.message);
         } else {
@@ -108,7 +115,7 @@ const EditHospital = () => {
           </Link>
         </div>
         <form className="space-y-1 m-0">
-          <h3 className="text-lg mb-4 font-medium leading-6 text-gray-900 text-center font-semibold text-2xl">
+          <h3 className="mb-4 leading-6 text-gray-900 text-center font-semibold text-2xl">
             Edit Hospital
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -120,7 +127,7 @@ const EditHospital = () => {
                 value={hospitalName}
                 onChange={changeHospitalName}
                 type="text"
-                className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                 required
               />
             </div>
@@ -132,13 +139,37 @@ const EditHospital = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-900">
+                Municipality
+              </label>
+              <input
+                value={municipality}
+                onChange={(e) => setMunicipality(e.target.value)} 
+                type="text"
+                className="mt-1 block w-full  border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-900">
+                Ward No
+              </label>
+              <input
+                value={wardNo}
+                onChange={(e) => setWardNo(e.target.value)}
+                type="number"
+                className="mt-1 block w-full  border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-900">
                 Contact
               </label>
               <input
                 value={hospitalContactNumber}
                 onChange={changeHospitalContact}
                 type="number"
-                className="mt-1 block w-full  border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                className="mt-1 block w-full  border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                 required
               />
             </div>
@@ -150,7 +181,7 @@ const EditHospital = () => {
                 value={hospitalType}
                 onChange={changeHospitalType}
                 type="text"
-                className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                 required
               />
             </div>
@@ -167,7 +198,7 @@ const EditHospital = () => {
                   setLatitude(formattedValue);
                 }}
                 type="number"
-                className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                 required
               />
             </div>
@@ -184,7 +215,7 @@ const EditHospital = () => {
                   setLongitude(formattedValue);
                 }}
                 type="number"
-                className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                 required
               />
             </div>
@@ -195,7 +226,7 @@ const EditHospital = () => {
               <textarea
                 value={hospitalServices}
                 onChange={changeHospitalServices}
-                className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                 rows="4"
                 required
               ></textarea>

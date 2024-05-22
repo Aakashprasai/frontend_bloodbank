@@ -1,6 +1,3 @@
-const login_mock = {
-    "email" : "user",
-    "password" : "user",
-}
+const login_mock =[]
 
 export default login_mock;

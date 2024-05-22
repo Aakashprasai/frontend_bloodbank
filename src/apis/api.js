@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const Api = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: "http://localhost:5050",
   withCredentials: true,
   headers: {
     "Content-Type": "multipart/form-data",
@@ -12,6 +12,8 @@ const Api = axios.create({
 // ======================================> user api <===============================
 
 export const createUserApi = (data) => Api.post("/api/user/register", data);
+
+export const sendOtpApi = (data) => Api.post("/api/user/send_otp", data);
 
 export const loginUserApi = (data) => Api.post("/api/user/login", data);
 
@@ -97,6 +99,9 @@ export const fetchSingleBloodBankApi = (id) =>
 export const deleteBloodBankApi = (id) =>
   Api.delete(`/api/bloodbank/deletebloodbank/${id}`);
 
+  export const sendInfoApi = (id) =>
+  Api.get(`/api/bloodbank/send-info/${id}`);
+
 export const updateBloodBankApi = (id, formData) =>
   Api.put(`/api/bloodbank/updatebloodbank/${id}`, formData);
 
@@ -115,6 +120,15 @@ export const viewRequestApi = (data) =>
 export const getSingleRequestApi = (id) =>
   Api.get(`/api/blood_request/request/${id}`);
 
+export const deleteRequestApi = (id) =>
+  Api.delete(`/api/blood_request/delete_request/${id}`);
+
+export const updateRequestApi = (id, data) =>
+  Api.put(`/api/blood_request/update_request/${id}`, data);
+
+export const updateShowRequestApi = (data) =>
+  Api.put(`/api/blood_request/update_show_request`, data);
+
 // ======================================> Contact US API <===============================
 
 export const sendMessageApi = (data) =>
@@ -128,3 +142,58 @@ export const newsAPi = (data) =>
     "https://newsdata.io/api/1/news?apikey=pub_3882905bc0f7ab80ee7df6334e62ac3b05d3a&q=health&country=np",
     data
   );
+
+
+// ======================================> Request For Blood Bank API <===============================
+export const addRequestBBApi = (formData) =>
+  Api.post("/api/req_bb/add_request_bb", formData);   
+
+export const viewRequestBBApi = (data) =>
+  Api.get("/api/req_bb/all_requests_bb", data);
+
+export const getSingleRequestBBApi = (id) =>
+  Api.get(`/api/req_bb/request_bb/${id}`);
+
+
+export const getReqOfUserApi = (id) =>
+  Api.get(`/api/req_bb/get_user_request/${id}`);
+
+export const deleteRequestBBApi = (id) =>
+  Api.delete(`/api/req_bb/delete_request_bb/${id}`);
+
+export const updateRequestBBApi = (id, data) =>
+  Api.put(`/api/req_bb/update_request_bb/${id}`, data);
+
+export const  updateStatusApi= (data) =>
+  Api.put(`/api/req_bb/update_status`, data);
+
+// export const getMyRequestBBApi = (id) =>
+//   Api.get(`/api/requestForBB/get_my_request/${id}`);
+
+// ======================================> Campaign API <===============================
+export const addCampaignApi = (data) =>
+  Api.post("/api/campaign/add_campaign", data);
+
+export const viewCampaignApi = (data) =>
+  Api.get("/api/campaign/get_all_campaign", data);
+
+export const getSingleCampaignApi = (id) =>
+  Api.get(`/api/campaign/single_campaign/${id}`);
+
+export const getAllCampaignByBBApi = (id) =>
+  Api.get(`/api/campaign/campaign_by_bb/${id}`);
+
+export const deleteCampaignApi = (id) =>
+  Api.delete(`/api/campaign/delete_campaign/${id}`);
+
+export const updateCampaignApi = (id, data) =>
+  Api.put(`/api/campaign/update_campaign/${id}`, data);
+
+
+// ======================================> Registered Users For Campaigns API <===============================
+
+export const registerForCampaignApi = (data) =>
+  Api.post("/api/registered_users/register_for", data);
+
+export const getRegisteredUsersApi = (id) =>
+  Api.get(`/api/registered_users/registered_users/${id}`);

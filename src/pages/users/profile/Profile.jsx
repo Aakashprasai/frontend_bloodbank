@@ -16,6 +16,8 @@ const Profile = ({ updateFullName }) => {
   const [email, setEmail] = useState("");
   const [number, setNumber] = useState("");
   const [currentAddress, setCurrentAddress] = useState("");
+  const [municipality, setMunicipality] = useState("");
+  const [ward, setWard] = useState("");
   const [gender, setGender] = useState("");
   const [dob, setDOb] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
@@ -39,6 +41,8 @@ const Profile = ({ updateFullName }) => {
       setNumber(res.data.user.number);
       setGender(res.data.user.gender);
       setCurrentAddress(res.data.user.currentAddress);
+      setMunicipality(res.data.user.municipality);
+      setWard(res.data.user.wardNo);
       setDOb(res.data.user.dob);
       setBloodGroup(res.data.user.bloodGroup);
       setEmergencyNumber(res.data.user.emergencyNumber);
@@ -68,6 +72,8 @@ const Profile = ({ updateFullName }) => {
     data.append("email", email);
     data.append("number", number);
     data.append("currentAddress", currentAddress);
+    data.append("municipality", municipality);
+    data.append("wardNo", ward);
     data.append("gender", gender);
     data.append("dob", dob);
     data.append("bloodGroup", bloodGroup);
@@ -79,7 +85,6 @@ const Profile = ({ updateFullName }) => {
     // making API call
     updateUser(id, data)
       .then((res) => {
-        console.log(data);
         if (res.data.success === false) {
           toast.error(res.data.message);
         } else {
@@ -87,7 +92,6 @@ const Profile = ({ updateFullName }) => {
           setReloadPage((prev) => !prev);
           setPreviewImage(null);
           // Update local storage with the new full name
-          console.log(res.data.updateUser);
           const updatedFullName = res.data.updateUser.fullName;
 
           localStorage.setItem(
@@ -167,7 +171,7 @@ const Profile = ({ updateFullName }) => {
                   </div> */}
                   <div className="row gx-3 mb-3">
                     <div className="col-md-6">
-                      <label className="small mb-1" for="inputFirstName">
+                      <label className="small mb-1" htmlFor="inputFirstName">
                         Full Name
                       </label>
                       <input
@@ -181,7 +185,7 @@ const Profile = ({ updateFullName }) => {
                     </div>
 
                     <div className="col-md-6">
-                      <label className="small mb-1" for="inputEmailAddress">
+                      <label className="small mb-1" htmlFor="inputEmailAddress">
                         Email address
                       </label>
                       <input
@@ -205,7 +209,7 @@ const Profile = ({ updateFullName }) => {
                       />
                     </div>
                     <div className="col-md-6">
-                      <label className="small mb-1" for="inputLocation">
+                      <label className="small mb-1" htmlFor="inputLocation">
                         Address
                       </label>
                       <input
@@ -218,11 +222,34 @@ const Profile = ({ updateFullName }) => {
                       />
                     </div>
                   </div>
+                  <div className="row gx-3 mb-3">
+                    <div className="col-md-6">
+                      <label className="small mb-1">Municipality</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        value={municipality}
+                        onChange={(e) => setMunicipality(e.target.value)}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="small mb-1" htmlFor="inputLocation">
+                        Ward No.
+                      </label>
+                      <input
+                        onChange={(e) => setWard(e.target.value)}
+                        className="form-control"
+                        id="inputLocation"
+                        type="text"
+                        value={ward}
+                      />
+                    </div>
+                  </div>
                   {users.isADonor ? (
                     <>
                       <div className="row gx-3 mb-3">
                         <div className="col-md-6">
-                          <label className="small mb-1" for="inputPhone">
+                          <label className="small mb-1" htmlFor="inputPhone">
                             Emergency Number
                           </label>
                           <input
@@ -235,7 +262,7 @@ const Profile = ({ updateFullName }) => {
                           />
                         </div>
                         <div className="col-md-6">
-                          <label className="small mb-1" for="inputBirthday">
+                          <label className="small mb-1" htmlFor="inputBirthday">
                             Birthday
                           </label>
                           <input
@@ -253,7 +280,7 @@ const Profile = ({ updateFullName }) => {
                       </div>
                       <div className="row gx-3 mb-3">
                         <div className="col-md-6">
-                          <label className="small mb-1" for="inputLastName">
+                          <label className="small mb-1" htmlFor="inputLastName">
                             Gender
                           </label>
                           <select
@@ -274,7 +301,7 @@ const Profile = ({ updateFullName }) => {
                       </div>
                       <div className="row gx-3 mb-3">
                         <div className="col-md-6">
-                          <label className="small mb-1" for="inputLocation">
+                          <label className="small mb-1" htmlFor="inputLocation">
                             Select BloodGroup
                           </label>
                           <select
@@ -298,7 +325,7 @@ const Profile = ({ updateFullName }) => {
                           </select>
                         </div>
                         <div className="col-md-6">
-                          <label className="small mb-1" for="inputLocation">
+                          <label className="small mb-1" htmlFor="inputLocation">
                             No. of Previous Donation 'Approx'
                           </label>
                           <input

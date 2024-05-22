@@ -14,10 +14,11 @@ import {
   deletehospitalApi,
   getallhospitalsApi,
 } from "../../../apis/api";
-import BloodGroupLists from "../../../components/BloodGroupsList";
 import DistrictList from "../../../components/DistrictsList";
 
 export default function AddHospitals() {
+  const users = JSON.parse(localStorage.getItem("user"));
+
   const [hospitals, setHospitals] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -28,6 +29,13 @@ export default function AddHospitals() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
+
+  const [filteredHospitals, setFilteredhospitals] = useState([]);
+  const [filters, setFilters] = useState({
+    hospitalName: "",
+    hospitalAddress: "",
+    municipality: "",
+  });
 
   const fetchHospitals = async () => {
     try {
@@ -48,6 +56,31 @@ export default function AddHospitals() {
     fetchHospitals();
   }, [addressSearch, bloodGroupsSearch, hospitalSearch, sortBy, sortOrder]);
 
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters({ ...filters, [name]: value });
+  };
+  
+  useEffect(() => {
+    const filtered = hospitals.filter((hospital) => {
+      return (
+        (filters.hospitalName === "" ||
+          hospital.hospitalName
+            .toLowerCase()
+            .includes(filters.hospitalName.toLowerCase())) &&
+        (filters.hospitalAddress === "" ||
+          hospital.hospitalAddress
+            .toLowerCase()
+            .includes(filters.hospitalAddress.toLowerCase())) &&
+        (filters.municipality === "" ||
+          hospital.municipality
+            .toLowerCase()
+            .includes(filters.municipality.toLowerCase()))
+      );
+    });
+    setFilteredhospitals(filtered);
+  }, [filters, hospitals]);
+
   const handleSort = (column) => {
     setSortBy(column);
     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -55,6 +88,8 @@ export default function AddHospitals() {
 
   const [hospitalName, setHospitalName] = useState("");
   const [hospitalAddress, setHospitalAddress] = useState("");
+  const [municipality, setMunicipality] = useState("");
+  const [wardNo, setWardNo] = useState("");
   const [hospitalContactNumber, setHospitalContactNumber] = useState("");
   const [hospitalType, setHospitalType] = useState("");
   const [hospitalServices, setHospitalServices] = useState("");
@@ -63,6 +98,7 @@ export default function AddHospitals() {
   const [isdeleteModalOpen, setdeleteIsModalOpen] = useState(false);
   const opendeleteModal = () => setdeleteIsModalOpen(true);
   const closedeleteModal = () => setdeleteIsModalOpen(false);
+  const [requestII, setRequestII] = useState("");
 
   const changeHospitalName = (e) => {
     setHospitalName(e.target.value);
@@ -97,6 +133,8 @@ export default function AddHospitals() {
     const formData = new FormData();
     formData.append("hospitalName", hospitalName);
     formData.append("hospitalAddress", hospitalAddress);
+    formData.append("municipality", municipality);
+    formData.append("wardNo", wardNo);
     formData.append("hospitalContactNumber", hospitalContactNumber);
     formData.append("hospitalType", hospitalType);
     formData.append("hospitalServices", hospitalServices);
@@ -112,6 +150,7 @@ export default function AddHospitals() {
         } else {
           closeModal();
           toast.success(res.data.message);
+          fetchHospitals();
         }
       })
       .catch((e) => {
@@ -125,11 +164,11 @@ export default function AddHospitals() {
 
   // delete
   const handleDelete = (id) => {
-    // make Api call
     deletehospitalApi(id).then((res) => {
       if (res.data.success == true) {
+        closedeleteModal(true);
         toast.success(res.data.message);
-        window.location.reload();
+        fetchHospitals();
       } else {
         toast.error(res.data.message);
       }
@@ -145,46 +184,49 @@ export default function AddHospitals() {
   return (
     <>
       <div className="w-full sm:px-6">
-        <div className="px-4 md:px-10 py-2 md:py-7 bg-gray-100 rounded-tl-lg rounded-tr-lg">
-          <div className="sm:flex flex-row items-center justify-between">
-            <p className="inline-flex sm:ml-3  sm:mt-0 items-start justify-start px-6 py-3  text-black focus:outline-none rounded">
-              Hospitals
-            </p>
-            <div>
-              <button
-                className="inline-flex sm:ml-3 mt-1 sm:mt-0 items-start justify-start px-6 py-3 bg-[#111111] hover:bg-[#ff0000] text-white focus:outline-none rounded"
-                onClick={openModal}
-              >
-                Add Hospitals
-              </button>
+        {users.isAdmin ? (
+          <div className="px-4 md:px-10 py-2 md:py-7 bg-gray-100 rounded-tl-lg rounded-tr-lg">
+            <div className="sm:flex flex-row items-center justify-between">
+              <p className="inline-flex sm:ml-3  sm:mt-0 items-start justify-start px-6 py-3  text-black focus:outline-none rounded">
+                Hospitals
+              </p>
+              <div>
+                <button
+                  className="inline-flex sm:ml-3 mt-1 sm:mt-0 items-start justify-start px-6 py-3 bg-[#111111] hover:bg-[#ff0000] text-white focus:outline-none rounded"
+                  onClick={openModal}
+                >
+                  Add Hospitals
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        ) : null}
         <div className="bg-white shadow px-4 md:px-10 pt-4 md:pt-7 pb-5 overflow-y-auto">
           <div className="flex flex-col items-center justify-center md:flex-row md:items-start md:justify-between md:gap-4 mb-4 w-full">
-            <div className="w-full md:w-1/3">
-              <BloodGroupLists
-                onChange={(e) => setBloodGroupsSearch(e.target.value)}
-                value={bloodGroupsSearch}
-              />
-            </div>
-            <div className="w-full md:w-1/3 md:mt-0">
-              <DistrictList
-                onChange={(e) => setAddressSearch(e.target.value)}
-              />
-            </div>
-            <div className="w-full md:w-1/3 md:mt-0">
-              <label
-                htmlFor="filterSelect"
-                className="block text-sm font-medium my-1 text-gray-700"
-              >
-                Hospital
-              </label>
+            <div className="flex w-100 my-4 gap-2">
               <input
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                className="w-1/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block p-2.5  dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
                 type="text"
-                placeholder="Search Hospitals..."
-                onChange={(e) => sethospitalSearch(e.target.value)}
+                name="hospitalName"
+                placeholder="Filter by Hospital Name"
+                value={filters.hospitalName}
+                onChange={handleFilterChange}
+              />
+              <input
+                className="w-1/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block p-2.5  dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
+                type="text"
+                name="hospitalAddress"
+                placeholder="Filter by Hospital District"
+                value={filters.hospitalAddress}
+                onChange={handleFilterChange}
+              />
+              <input
+                className="w-1/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block p-2.5  dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
+                type="text"
+                name="municipality"
+                placeholder="Filter by Municipality"
+                value={filters.municipality}
+                onChange={handleFilterChange}
               />
             </div>
           </div>
@@ -195,7 +237,9 @@ export default function AddHospitals() {
                 <tr className="h-16 w-full text-sm leading-none text-gray-800">
                   <th className="font-normal text-left pl-4">Hospital Image</th>
                   <th className="font-normal text-left pl-4">Hospital Name</th>
-                  <th className="font-normal text-left pl-12">Location</th>
+                  <th className="font-normal text-left pl-12">District</th>
+                  <th className="font-normal text-left pl-12">Municipality</th>
+                  <th className="font-normal text-left pl-12">Ward No.</th>
                   <th className="font-normal text-left pl-12">Contact</th>
                   <th className="font-normal text-left pl-20">Hospital Type</th>
                   <th className="font-normal text-left pl-20">
@@ -214,12 +258,17 @@ export default function AddHospitals() {
                       )}
                     </button>
                   </th>
-                  <th className="font-normal text-left pl-16">Action</th>
+                  {users.isBloodBank ? null : (
+                    <th className="font-normal text-left pl-16">Action</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="w-full">
-                {hospitals.map((item) => (
-                  <tr className="h-20 text-sm leading-none text-gray-800 bg-white hover:bg-gray-100 border-b border-t border-gray-100">
+                {filteredHospitals.map((item) => (
+                  <tr
+                    key={item._id}
+                    className="h-20 text-sm leading-none text-gray-800 bg-white hover:bg-gray-100 border-b border-t border-gray-100"
+                  >
                     <td className="pl-4 cursor-pointer">
                       <div className="flex items-center">
                         <div className="w-10 h-10">
@@ -239,6 +288,12 @@ export default function AddHospitals() {
                     <td className="pl-12">
                       <p className="font-medium">{item.hospitalAddress}</p>
                     </td>
+                    <td className="pl-12">
+                      <p className="font-medium">{item.municipality}</p>
+                    </td>
+                    <td className="pl-12">
+                      <p className="font-medium">{item.wardNo}</p>
+                    </td>
                     <td className="pl-20">
                       <p className="font-medium">
                         {item.hospitalContactNumber}
@@ -255,29 +310,34 @@ export default function AddHospitals() {
                         {new Date(item.createdAt).toLocaleDateString()}
                       </p>
                     </td>
-                    <td className="px-7 2xl:px-0">
-                      {/* Edit Button */}
-                      <Link
-                        className="focus:outline-none py-2 px-4"
-                        to={`/edit-hospital/${item._id}`}
-                      >
-                        <FontAwesomeIcon
-                          icon={faEdit}
-                          className="text-blue-500 hover:text-blue-700 cursor-pointer"
-                        />
-                      </Link>
+                    {users.isBloodBank ? null : (
+                      <td className="px-7 2xl:px-0">
+                        {/* Edit Button */}
+                        <Link
+                          className="focus:outline-none py-2 px-4"
+                          to={`/edit-hospital/${item._id}`}
+                        >
+                          <FontAwesomeIcon
+                            icon={faEdit}
+                            className="text-blue-500 hover:text-blue-700 cursor-pointer"
+                          />
+                        </Link>
 
-                      {/* Delete Button */}
-                      <button
-                        onClick={opendeleteModal}
-                        className="focus:outline-none ml-2 "
-                      >
-                        <FontAwesomeIcon
-                          icon={faTrash}
-                          className="text-red-500 hover:text-red-700 cursor-pointer "
-                        />
-                      </button>
-                    </td>
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => {
+                            opendeleteModal();
+                            setRequestII(item._id);
+                          }}
+                          className="focus:outline-none ml-2 "
+                        >
+                          <FontAwesomeIcon
+                            icon={faTrash}
+                            className="text-red-500 hover:text-red-700 cursor-pointer "
+                          />
+                        </button>
+                      </td>
+                    )}
                     {isdeleteModalOpen && (
                       <div
                         className="fixed inset-0 flex items-center justify-center bg-opacity-20 overflow-y-auto h-full w-full"
@@ -297,7 +357,7 @@ export default function AddHospitals() {
                           </h6>
                           <div className="flex flex-wrap items-center justify-between mx-auto w-full">
                             <button
-                              onClick={() => handleDelete(item._id)}
+                              onClick={() => handleDelete(requestII)}
                               className="w-1/3 text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm text-center py-2.5"
                             >
                               Delete
@@ -336,7 +396,7 @@ export default function AddHospitals() {
               </div>
 
               <form className="space-y-6">
-                <h3 className="text-lg font-medium leading-6 text-gray-900 text-center font-semibold text-2xl">
+                <h3 className=" leading-6 text-gray-900 text-center font-semibold text-2xl">
                   Add New Hospital
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -347,7 +407,7 @@ export default function AddHospitals() {
                     <input
                       onChange={changeHospitalName}
                       type="text"
-                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                       required
                     />
                   </div>
@@ -356,12 +416,34 @@ export default function AddHospitals() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-900">
+                      Municipality
+                    </label>
+                    <input
+                      onChange={(e) => setMunicipality(e.target.value)}
+                      type="text"
+                      className="mt-1 block w-full  border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900">
+                      Ward No.
+                    </label>
+                    <input
+                      onChange={(e) => setWardNo(e.target.value)}
+                      type="number"
+                      className="mt-1 block w-full  border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900">
                       Contact
                     </label>
                     <input
                       onChange={changeHospitalContact}
                       type="number"
-                      className="mt-1 block w-full  border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                      className="mt-1 block w-full  border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                       required
                     />
                   </div>
@@ -372,7 +454,7 @@ export default function AddHospitals() {
                     <input
                       onChange={changeHospitalType}
                       type="text"
-                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                       required
                     />
                   </div>
@@ -391,7 +473,7 @@ export default function AddHospitals() {
                         setLatitude(formattedValue);
                       }}
                       type="number"
-                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                       required
                     />
                   </div>
@@ -410,7 +492,7 @@ export default function AddHospitals() {
                         setLongitude(formattedValue);
                       }}
                       type="number"
-                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                       required
                     />
                   </div>
@@ -420,7 +502,7 @@ export default function AddHospitals() {
                     </label>
                     <textarea
                       onChange={changeHospitalServices}
-                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                       rows="4"
                       required
                     ></textarea>

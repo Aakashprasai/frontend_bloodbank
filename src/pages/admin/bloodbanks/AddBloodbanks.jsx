@@ -1,5 +1,4 @@
 import {
-  faEdit,
   faExclamationCircle,
   faTimes,
   faTrash,
@@ -14,7 +13,6 @@ import {
   deleteBloodBankApi,
   getallBloodBankApi,
 } from "../../../apis/api";
-import BloodGroupLists from "../../../components/BloodGroupsList";
 import DistrictList from "../../../components/DistrictsList";
 import MultiSelectBG from "../../../components/MultiSeletctBG";
 
@@ -31,6 +29,14 @@ export default function AddBloodBanks() {
   const [longitude, setLongitude] = useState("");
   const [bbImage, setBloodBankImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [requestII, setRequestII] = useState("");
+
+  const [filteredBloodBank, setfilteredBloodBank] = useState([]);
+  const [filters, setFilters] = useState({
+    bbName: "",
+    bbAddress: "",
+    municipality: "",
+  });
 
   const fetchBloodBanks = async () => {
     try {
@@ -52,6 +58,31 @@ export default function AddBloodBanks() {
     fetchBloodBanks();
   }, [bbAddressSearch, bbNameSearch, bloodGroupsSearch, sortBy, sortOrder]);
 
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters({ ...filters, [name]: value });
+  };
+
+  useEffect(() => {
+    const filtered = bloodBank.filter((hospital) => {
+      return (
+        (filters.bbName === "" ||
+          hospital.bbName
+            .toLowerCase()
+            .includes(filters.bbName.toLowerCase())) &&
+        (filters.bbAddress === "" ||
+          hospital.bbAddress
+            .toLowerCase()
+            .includes(filters.bbAddress.toLowerCase())) &&
+        (filters.municipality === "" ||
+          hospital.municipality
+            .toLowerCase()
+            .includes(filters.municipality.toLowerCase()))
+      );
+    });
+    setfilteredBloodBank(filtered);
+  }, [filters, bloodBank]);
+
   const [bbName, setbbName] = useState("");
   const [bbAddress, setbbAddress] = useState("");
   const [bbContact, setbbContact] = useState("");
@@ -61,6 +92,15 @@ export default function AddBloodBanks() {
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [availableBloodGroups, setAvailableBloodGroups] = useState([]);
   const [socialMediaLinks, setSocialMediaLinks] = useState("");
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+  const [isdeleteModalOpen, setdeleteIsModalOpen] = useState(false);
+  const opendeleteModal = () => setdeleteIsModalOpen(true);
+  const closedeleteModal = () => setdeleteIsModalOpen(false);
 
   const handleSort = (column) => {
     setSortBy(column);
@@ -120,13 +160,14 @@ export default function AddBloodBanks() {
 
     createBloodBankApi(formData)
       .then((res) => {
-        console.log(res.data);
+        // console.log(res.data);
 
         if (res.data.success == false) {
           toast.error(res.data.message);
         } else {
           closeModal();
           toast.success(res.data.message);
+          fetchBloodBanks();
         }
       })
       .catch((e) => {
@@ -144,21 +185,13 @@ export default function AddBloodBanks() {
     deleteBloodBankApi(id).then((res) => {
       if (res.data.success == true) {
         toast.success(res.data.message);
-        window.location.reload();
+        closedeleteModal(true);
+        fetchBloodBanks();
       } else {
         toast.error(res.data.message);
       }
     });
   };
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
-
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
-  const [isdeleteModalOpen, setdeleteIsModalOpen] = useState(false);
-  const opendeleteModal = () => setdeleteIsModalOpen(true);
-  const closedeleteModal = () => setdeleteIsModalOpen(false);
 
   return (
     <>
@@ -168,43 +201,34 @@ export default function AddBloodBanks() {
             <p className="inline-flex sm:ml-3  sm:mt-0 items-start justify-start px-6 py-3  text-black focus:outline-none rounded">
               BloodBanks
             </p>
-            <div>
-              <button
-                className="inline-flex sm:ml-3 mt-1 sm:mt-0 items-start justify-start px-6 py-3 bg-[#111111] hover:bg-[#ff0000] text-white focus:outline-none rounded"
-                onClick={openModal}
-              >
-                Add BloodBanks
-              </button>
-            </div>
           </div>
         </div>
         <div className="bg-white shadow px-4 md:px-10 pt-4 md:pt-7 pb-5">
-          <div className="flex flex-col items-center overflow-hidden justify-center md:flex-row md:items-start md:justify-between md:gap-4 mb-4 w-full">
-            <div className="w-full md:w-1/3">
-              <BloodGroupLists
-                onChange={(e) => setBGsearch(e.target.value)}
-                value={bloodGroupsSearch}
-              />
-            </div>
-            <div className="w-full md:w-1/3 md:mt-0">
-              <DistrictList
-                onChange={(e) => setbbAddressSearch(e.target.value)}
-              />
-            </div>
-            <div className="w-full md:w-1/3 md:mt-0">
-              <label
-                htmlFor="filterSelect"
-                className="block text-sm font-medium my-1 text-gray-700"
-              >
-                Blood Bank Name
-              </label>
-              <input
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
-                type="text"
-                placeholder="Search Blood Banks..."
-                onChange={searchbyname}
-              />
-            </div>
+          <div className="flex w-100 my-4 gap-2">
+            <input
+              className="w-1/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block p-2.5  dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
+              type="text"
+              name="bbName"
+              placeholder="Filter by BloodBank Name"
+              value={filters.bbName}
+              onChange={handleFilterChange}
+            />
+            <input
+              className="w-1/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block p-2.5  dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
+              type="text"
+              name="bbAddress"
+              placeholder="Filter by District"
+              value={filters.bbAddress}
+              onChange={handleFilterChange}
+            />
+            <input
+              className="w-1/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block p-2.5  dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
+              type="text"
+              name="municipality"
+              placeholder="Filter by Municipality"
+              value={filters.municipality}
+              onChange={handleFilterChange}
+            />
           </div>
 
           <div className="w-full bg-white overflow-y-auto">
@@ -214,20 +238,24 @@ export default function AddBloodBanks() {
                   <th className="font-normal text-left pl-4">
                     BloodBank Image
                   </th>
-                  <th className="font-normal text-left pl-4">BloodBank Name</th>
+                  <th className="font-normal text-left pl-12">
+                    BloodBank Name
+                  </th>
+                  <th className="font-normal text-left pl-12">Municipality</th>
+                  <th className="font-normal text-left pl-12">Ward No.</th>
                   <th className="font-normal text-left pl-12">
                     BloodBank Address
                   </th>
                   <th className="font-normal text-left pl-12">
                     BloodBank Contact
                   </th>
-                  <th className="font-normal text-left pl-20">
+                  <th className="font-normal text-left pl-12">
                     Operating Hours
                   </th>
-                  <th className="font-normal text-left pl-20">
+                  <th className="font-normal text-left pl-12">
                     BLoodGroups Available
                   </th>
-                  <th className="font-normal text-left pl-20">
+                  <th className="font-normal text-left pl-12">
                     SocialMedia Links
                   </th>
                   <th className="font-normal text-left pl-12">
@@ -247,15 +275,15 @@ export default function AddBloodBanks() {
                 </tr>
               </thead>
               <tbody className="w-full">
-                {bloodBank &&
-                  bloodBank.map((item) => (
+                {filteredBloodBank &&
+                  filteredBloodBank.map((item) => (
                     <tr className="h-20 text-sm leading-none text-gray-800 bg-white hover:bg-gray-100 border-b border-t border-gray-100">
                       <td className="pl-4 cursor-pointer">
                         <div className="flex items-center">
                           <div className="w-10 h-10">
                             <img
                               className="w-full h-full"
-                              src={item.bbImageUrl}
+                              src={item.userImageURL}
                               alt="BloodBank Image"
                             />
                           </div>
@@ -270,19 +298,29 @@ export default function AddBloodBanks() {
                         </p>
                       </td>
                       <td className="pl-12">
+                        <p className="text-sm font-medium leading-none text-gray-800">
+                          {item.municipality}
+                        </p>
+                      </td>
+                      <td className="pl-12">
+                        <p className="text-sm font-medium leading-none text-gray-800">
+                          {item.ward}
+                        </p>
+                      </td>
+                      <td className="pl-12">
                         <p className="font-medium">{item.bbContact}</p>
                       </td>
-                      <td className="pl-20">
+                      <td className="pl-12">
                         <p className="font-medium">{item.operatingHours}</p>
                       </td>
-                      <td className="pl-20">
+                      <td className="pl-12">
                         <p className="font-medium">
                           {item.availableBloodGroups}
                         </p>
                       </td>
 
                       <td
-                        className="pl-20"
+                        className="pl-12"
                         style={{
                           maxWidth: "200px",
                           overflow: "hidden",
@@ -298,34 +336,27 @@ export default function AddBloodBanks() {
                             : item.socialMediaLinks}
                         </p>
                       </td>
-                      <td className="pl-20 overflow-y max-w-[200px] truncate">
+                      <td className="pl-12 overflow-y max-w-[200px] truncate">
                         <p className="font-medium">
                           {new Date(item.createdAt).toLocaleDateString()}
                         </p>
                       </td>
-
-                      <td className="px-7 2xl:px-0">
-                        {/* Edit Button */}
-                        <Link
-                          className="focus:outline-none py-2 px-4"
-                          to={`/edit-bloodbank/${item._id}`}
-                        >
-                          <FontAwesomeIcon
-                            icon={faEdit}
-                            className="text-blue-500 hover:text-blue-700 cursor-pointer"
-                          />
-                        </Link>
-
+                      <td className="pl-12">
                         {/* Delete Button */}
-                        <button
-                          className="focus:outline-none ml-2"
-                          onClick={opendeleteModal}
+                        <Link
+                          className="focus:outline-none py-2 px-4 bg-[#ff0000] hover:!bg-[#000000] rounded-lg cursor-pointer"
+                          onClick={() => {
+                            opendeleteModal();
+                            setRequestII(item._id);
+                          }}
+                          title="Delete Item"
                         >
                           <FontAwesomeIcon
                             icon={faTrash}
-                            className="text-red-500 hover:text-red-700 cursor-pointer "
+                            title="Delete Item"
+                            className="text-[#ffffff] cursor-pointer"
                           />
-                        </button>
+                        </Link>
 
                         {isdeleteModalOpen && (
                           <div
@@ -346,7 +377,7 @@ export default function AddBloodBanks() {
                               </h6>
                               <div className="flex flex-wrap items-center justify-between mx-auto w-full">
                                 <button
-                                  onClick={() => handleDelete(item._id)}
+                                  onClick={() => handleDelete(requestII)}
                                   className="w-1/3 text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm text-center py-2.5"
                                 >
                                   Delete
@@ -387,7 +418,7 @@ export default function AddBloodBanks() {
               </div>
 
               <form className="space-y-6">
-                <h3 className="text-lg font-medium leading-6 text-gray-900 text-center font-semibold text-2xl">
+                <h3 className="leading-6 text-gray-900 text-center font-semibold text-2xl">
                   Add New BloodBank
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -398,7 +429,7 @@ export default function AddBloodBanks() {
                     <input
                       onChange={changebbName}
                       type="text"
-                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                       required
                     />
                   </div>
@@ -412,7 +443,7 @@ export default function AddBloodBanks() {
                     <input
                       onChange={changebbContact}
                       type="number"
-                      className="mt-1 block w-full  border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                      className="mt-1 block w-full  border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                       required
                     />
                   </div>
@@ -426,7 +457,7 @@ export default function AddBloodBanks() {
                     <input
                       type="text"
                       onChange={changeOperatingHours}
-                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                       rows="4"
                       required
                     ></input>
@@ -438,7 +469,7 @@ export default function AddBloodBanks() {
                     <input
                       onChange={changeSocialMediaLinks}
                       type="text"
-                      className="mt-1 block w-full  border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                      className="mt-1 block w-full  border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                       required
                     />
                   </div>
@@ -457,7 +488,7 @@ export default function AddBloodBanks() {
                         setLatitude(formattedValue);
                       }}
                       type="number"
-                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                       required
                     />
                   </div>
@@ -476,7 +507,7 @@ export default function AddBloodBanks() {
                         setLongitude(formattedValue);
                       }}
                       type="number"
-                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                       required
                     />
                   </div>
@@ -487,7 +518,7 @@ export default function AddBloodBanks() {
                     <input
                       onChange={(e) => setServiceOffered(e.target.value)}
                       type="text"
-                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                       required
                     />
                   </div>
@@ -498,7 +529,7 @@ export default function AddBloodBanks() {
                     <input
                       onChange={(e) => setSpecialInstructions(e.target.value)}
                       type="text"
-                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                      className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                       required
                     />
                   </div>
@@ -511,7 +542,7 @@ export default function AddBloodBanks() {
                     rows={5}
                     onChange={(e) => setAdditionalNotes(e.target.value)}
                     type="text"
-                    className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                    className="mt-1 block w-full border border-solid border-gray-300 text-gray-900 rounded-lg shadow-sm"
                     required
                   />
                 </div>

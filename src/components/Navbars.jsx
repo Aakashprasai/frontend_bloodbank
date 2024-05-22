@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FiMenu } from "react-icons/fi";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import "../style/navbar.css";
+import { toast } from "react-toastify";
 
 const Navbars = ({ fullName }) => {
   const [activeItem, setActiveItem] = useState(null);
@@ -18,13 +19,13 @@ const Navbars = ({ fullName }) => {
   };
   const cancel = (e) => {
     closeLogoutModal();
-    navigate("/home");
   };
   const handleLogout = (e) => {
     closeLogoutModal();
     e.preventDefault();
     localStorage.clear();
     navigate("/login");
+    toast.success("Logged Out Successfully");
   };
   useEffect(() => {
     const pathname = location.pathname;
@@ -82,61 +83,116 @@ const Navbars = ({ fullName }) => {
         <label htmlFor="" className="logo text-danger">
           BloodBank
         </label>
-        <ul className="nav-ul">
-          <li className="nav-li">
-            <Link to={"/"} className={activeItem === 0 ? "active" : ""}>
-              Home
-            </Link>
-          </li>
-          {users && !users.isADonor ? (
-            <li className="nav-li">
-              <Link
-                to={`/be-a-donor/${users._id}`}
-                className={activeItem === 1 ? "active" : ""}
-              >
-                Be A Donor
-              </Link>
-            </li>
-          ) : (
-            <Outlet />
-          )}
-          {users && (
-            <li className="nav-li">
-              <Link
-                to={"/add_blood_requests"}
-                className={activeItem === 6 ? "active" : ""}
-              >
-                Add Blood Requests
-              </Link>
-            </li>
-          )}
-          <li className="nav-li">
-            <Link
-              to={"/blood_requests"}
-              className={activeItem === 2 ? "active" : ""}
-            >
-              View Blood Requests
-            </Link>
-          </li>
-          <li className="nav-li">
-            <Link to={"/services"} className={activeItem === 3 ? "active" : ""}>
-              Our Services
-            </Link>
-          </li>
-          <li className="nav-li">
-            <Link to={"/about-us"} className={activeItem === 4 ? "active" : ""}>
-              About Us
-            </Link>
-          </li>
-          <li className="nav-li">
-            <Link
-              to={"/contact-us"}
-              className={activeItem === 5 ? "active" : ""}
-            >
-              Contact Us
-            </Link>
-          </li>
-        </ul>
+        {users && users.isBloodBank ? (
+          <>
+            <ul className="nav-ul">
+              <li className="nav-li">
+                <Link
+                  to={"/bb/dashboard"}
+                  className={activeItem === 0 ? "active" : ""}
+                >
+                  Home
+                </Link>
+              </li>
+              <li className="nav-li">
+                <Link
+                  to={"/blood_requests"}
+                  className={activeItem === 2 ? "active" : ""}
+                >
+                  View Requests
+                </Link>
+              </li>
+              <li className="nav-li">
+                <Link
+                  to={"/services"}
+                  className={activeItem === 3 ? "active" : ""}
+                >
+                  Our Services
+                </Link>
+              </li>
+              <li className="nav-li">
+                <Link
+                  to={"/about-us"}
+                  className={activeItem === 4 ? "active" : ""}
+                >
+                  About Us
+                </Link>
+              </li>
+              <li className="nav-li">
+                <Link
+                  to={"/contact-us"}
+                  className={activeItem === 5 ? "active" : ""}
+                >
+                  Contact Us
+                </Link>
+              </li>
+            </ul>
+          </>
+        ) : (
+          <>
+            <ul className="nav-ul">
+              <li className="nav-li">
+                <Link to={"/"} className={activeItem === 0 ? "active" : ""}>
+                  Home
+                </Link>
+              </li>
+              {users && !users.isADonor ? (
+                <li className="nav-li">
+                  <Link
+                    to={`/be-a-donor/${users._id}`}
+                    className={activeItem === 1 ? "active" : ""}
+                  >
+                    Be A Donor
+                  </Link>
+                </li>
+              ) : (
+                <Outlet />
+              )}
+              {users && (
+                <li className="nav-li">
+                  <Link
+                    to={"/add_blood_requests"}
+                    className={activeItem === 6 ? "active" : ""}
+                  >
+                    Add Request
+                  </Link>
+                </li>
+              )}
+              <li className="nav-li">
+                <Link
+                  to={"/blood_requests"}
+                  className={activeItem === 2 ? "active" : ""}
+                >
+                  View Requests
+                </Link>
+              </li>
+              <li className="nav-li">
+                <Link
+                  to={"/services"}
+                  className={activeItem === 3 ? "active" : ""}
+                >
+                  Our Services
+                </Link>
+              </li>
+              <li className="nav-li">
+                <Link
+                  to={"/about-us"}
+                  className={activeItem === 4 ? "active" : ""}
+                >
+                  About Us
+                </Link>
+              </li>
+              <li className="nav-li">
+                <Link
+                  to={"/contact-us"}
+                  className={activeItem === 5 ? "active" : ""}
+                >
+                  Contact Us
+                </Link>
+              </li>
+            </ul>
+          </>
+        )}
 
         {users ? (
           <>
@@ -162,6 +218,7 @@ const Navbars = ({ fullName }) => {
                   <li style={{ width: "100%" }}>
                     <Link
                       className="dropdown-item"
+                      onClick={handleToggleDropdown}
                       to={`/profile/${users._id}`}
                     >
                       Profile
@@ -172,6 +229,7 @@ const Navbars = ({ fullName }) => {
                     <li style={{ width: "100%" }}>
                       <Link
                         className="dropdown-item"
+                        onClick={handleToggleDropdown}
                         to={`/get_my_request/${users._id}`}
                       >
                         My Requests
@@ -179,11 +237,7 @@ const Navbars = ({ fullName }) => {
                     </li>
                   ) : null}
                   <li style={{ width: "100%" }}>
-                    <Link
-                      className="dropdown-item"
-                      onClick={openLogoutModal}
-                      to="/logout"
-                    >
+                    <Link className="dropdown-item" onClick={openLogoutModal}>
                       Logout
                     </Link>
                   </li>
@@ -204,7 +258,7 @@ const Navbars = ({ fullName }) => {
       </nav>
       {isLogoutModalOpen && (
         <div
-          className="fixed inset-0 flex items-center justify-center bg-opacity-100 overflow-y-auto h-full w-full"
+          className="fixed inset-0 flex items-center justify-center bg-opacity-100 overflow-y-auto h-full w-full z-50"
           id="my-modal"
         >
           <div className="relative mx-auto p-4 border  shadow-sm w-1/4 rounded-md bg-white space-y-8 justify-center items-center flex flex-col">
@@ -226,7 +280,10 @@ const Navbars = ({ fullName }) => {
               <button
                 type="submit"
                 className="w-1/3 text-white bg-gray-500 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm py-2.5"
-                onClick={cancel}
+                onClick={() => {
+                  cancel();
+                  handleToggleDropdown();
+                }}
               >
                 Cancel
               </button>
